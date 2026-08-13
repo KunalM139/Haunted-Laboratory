@@ -8,6 +8,20 @@ public class MainMenuManager : MonoBehaviour
     public GameObject instructionsPanel;
     public GameObject settingsPanel;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    static void InitializeOnLoad()
+    {
+        if (SceneManager.GetActiveScene().name == "MainMenu")
+        {
+            if (FindFirstObjectByType<MainMenuManager>() == null)
+            {
+                Debug.LogError("========== AUTO-INJECTING MAIN MENU MANAGER ==========");
+                GameObject go = new GameObject("MainMenuManager");
+                go.AddComponent<MainMenuManager>();
+            }
+        }
+    }
+
     void Awake()
     {
         Debug.LogError("========== MAIN MENU MANAGER AWAKE ==========");
