@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using TMPro;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -252,7 +252,7 @@ public class LevelBuilder
         // UI Setup logic (TimerText, Slider, PauseMenu, GameOver Menu)
         GameObject timerTextObj = new GameObject("TimerText");
         timerTextObj.transform.parent = canvasObj.transform;
-        TextMeshProUGUI timerText = timerTextObj.AddComponent<TextMeshProUGUI>();
+        Text timerText = timerTextObj.AddComponent<Text>();
         timerTextObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 1);
         timerTextObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1);
         timerTextObj.GetComponent<RectTransform>().pivot = new Vector2(0, 1);
@@ -292,7 +292,7 @@ public class LevelBuilder
 
         GameObject intTextObj = new GameObject("InteractionText");
         intTextObj.transform.parent = canvasObj.transform;
-        TextMeshProUGUI intText = intTextObj.AddComponent<TextMeshProUGUI>();
+        Text intText = intTextObj.AddComponent<Text>();
         intTextObj.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
         intTextObj.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
         intTextObj.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
@@ -308,7 +308,7 @@ public class LevelBuilder
         pauseMenu.GetComponent<RectTransform>().anchorMax = Vector2.one;
         GameObject pTextObj = new GameObject("PauseText");
         pTextObj.transform.parent = pauseMenu.transform;
-        TextMeshProUGUI pText = pTextObj.AddComponent<TextMeshProUGUI>();
+        Text pText = pTextObj.AddComponent<Text>();
         pText.text = "PAUSED";
         pTextObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 100);
         um.pauseMenu = pauseMenu;
@@ -323,7 +323,7 @@ public class LevelBuilder
         gameOverMenu.GetComponent<RectTransform>().anchorMax = Vector2.one;
         GameObject goTextObj = new GameObject("GameOverText");
         goTextObj.transform.parent = gameOverMenu.transform;
-        TextMeshProUGUI goText = goTextObj.AddComponent<TextMeshProUGUI>();
+        Text goText = goTextObj.AddComponent<Text>();
         goText.text = "GAME OVER";
         goTextObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 100);
         um.gameOverMenu = gameOverMenu;
@@ -338,30 +338,138 @@ public class LevelBuilder
         GameObject camObj = new GameObject("Main Camera");
         Camera cam = camObj.AddComponent<Camera>();
         camObj.AddComponent<AudioListener>();
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = Color.black;
 
         GameObject canvasObj = new GameObject("Canvas");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvasObj.AddComponent<CanvasScaler>();
+        CanvasScaler cs = canvasObj.AddComponent<CanvasScaler>();
+        cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        cs.referenceResolution = new Vector2(1920, 1080);
         canvasObj.AddComponent<GraphicRaycaster>();
         
         GameObject eventSystem = new GameObject("EventSystem");
         eventSystem.AddComponent<EventSystem>();
         eventSystem.AddComponent<StandaloneInputModule>();
 
+        GameObject gmObj = new GameObject("MainMenuManager");
+        MainMenuManager mmm = gmObj.AddComponent<MainMenuManager>();
+
+        Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        // Title
         GameObject titleObj = new GameObject("TitleText");
         titleObj.transform.parent = canvasObj.transform;
-        TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
-        titleText.text = "HAUNTED LABORATORY";
-        titleObj.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.8f);
-        titleObj.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.8f);
-        titleObj.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(600, 100);
+        Text titleText = titleObj.AddComponent<Text>();
+        titleText.text = "HAUNTED LABORATORY\n<size=50%>VR ESCAPE ROOM</size>";
+        titleText.alignment = TextAnchor.MiddleCenter;
+        titleText.fontSize = 80;
+        if (defaultFont != null) titleText.font = defaultFont;
+        RectTransform titleRt = titleObj.GetComponent<RectTransform>();
+        titleRt.anchorMin = new Vector2(0.5f, 0.8f);
+        titleRt.anchorMax = new Vector2(0.5f, 0.8f);
+        titleRt.anchoredPosition = Vector2.zero;
+        titleRt.sizeDelta = new Vector2(800, 200);
 
-        GameObject gmObj = new GameObject("GameManager");
-        gmObj.AddComponent<GameManager>();
+        // Buttons
+        string[] btnNames = { "START GAME", "INSTRUCTIONS", "SETTINGS", "QUIT" };
+        for (int i = 0; i < btnNames.Length; i++)
+        {
+            GameObject btnObj = new GameObject(btnNames[i] + "Button");
+            btnObj.transform.parent = canvasObj.transform;
+            Image btnImg = btnObj.AddComponent<Image>();
+            btnImg.color = Color.gray;
+            Button btn = btnObj.AddComponent<Button>();
+            
+            RectTransform rt = btnObj.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = new Vector2(0, 50 - (i * 80));
+            rt.sizeDelta = new Vector2(300, 60);
+
+            GameObject textObj = new GameObject("Text");
+            textObj.transform.parent = btnObj.transform;
+            Text btnText = textObj.AddComponent<Text>();
+            btnText.text = btnNames[i];
+            btnText.alignment = TextAnchor.MiddleCenter;
+            btnText.color = Color.white;
+            if (defaultFont != null) btnText.font = defaultFont;
+            
+            RectTransform trt = textObj.GetComponent<RectTransform>();
+            trt.anchorMin = Vector2.zero;
+            trt.anchorMax = Vector2.one;
+            trt.sizeDelta = Vector2.zero;
+            trt.anchoredPosition = Vector2.zero;
+
+            // Hook up events
+            if (i == 0) UnityEditor.Events.UnityEventTools.AddPersistentListener(btn.onClick, mmm.StartGame);
+            else if (i == 1) UnityEditor.Events.UnityEventTools.AddPersistentListener(btn.onClick, mmm.ShowInstructions);
+            else if (i == 2) UnityEditor.Events.UnityEventTools.AddPersistentListener(btn.onClick, mmm.ShowSettings);
+            else if (i == 3) UnityEditor.Events.UnityEventTools.AddPersistentListener(btn.onClick, mmm.QuitGame);
+        }
+
+        // Panels
+        GameObject instPanel = CreatePanel(canvasObj, "InstructionsPanel", "WASD to Move\nMouse to Look\nE to Interact", defaultFont, mmm);
+        GameObject setPanel = CreatePanel(canvasObj, "SettingsPanel", "Settings Menu\nVolume Control Coming Soon", defaultFont, mmm);
+        mmm.instructionsPanel = instPanel;
+        mmm.settingsPanel = setPanel;
+        instPanel.SetActive(false);
+        setPanel.SetActive(false);
 
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/MainMenu.unity");
+    }
+
+    static GameObject CreatePanel(GameObject canvas, string name, string text, Font font, MainMenuManager mmm)
+    {
+        GameObject panel = new GameObject(name);
+        panel.transform.parent = canvas.transform;
+        Image bg = panel.AddComponent<Image>();
+        bg.color = new Color(0, 0, 0, 0.9f);
+        RectTransform rt = panel.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
+
+        GameObject textObj = new GameObject("Text");
+        textObj.transform.parent = panel.transform;
+        Text tmp = textObj.AddComponent<Text>();
+        tmp.text = text;
+        tmp.alignment = TextAnchor.MiddleCenter;
+        tmp.fontSize = 40;
+        if (font != null) tmp.font = font;
+        RectTransform trt = textObj.GetComponent<RectTransform>();
+        trt.anchorMin = new Vector2(0.5f, 0.5f);
+        trt.anchorMax = new Vector2(0.5f, 0.5f);
+        trt.sizeDelta = new Vector2(800, 600);
+        trt.anchoredPosition = Vector2.zero;
+
+        GameObject btnObj = new GameObject("CloseButton");
+        btnObj.transform.parent = panel.transform;
+        Image btnImg = btnObj.AddComponent<Image>();
+        btnImg.color = Color.red;
+        Button btn = btnObj.AddComponent<Button>();
+        RectTransform brt = btnObj.GetComponent<RectTransform>();
+        brt.anchorMin = new Vector2(0.5f, 0.2f);
+        brt.anchorMax = new Vector2(0.5f, 0.2f);
+        brt.sizeDelta = new Vector2(200, 60);
+        brt.anchoredPosition = Vector2.zero;
+        UnityEditor.Events.UnityEventTools.AddPersistentListener(btn.onClick, mmm.ClosePanels);
+
+        GameObject btnTextObj = new GameObject("Text");
+        btnTextObj.transform.parent = btnObj.transform;
+        Text btnText = btnTextObj.AddComponent<Text>();
+        btnText.text = "CLOSE";
+        btnText.alignment = TextAnchor.MiddleCenter;
+        if (font != null) btnText.font = font;
+        RectTransform btrt = btnTextObj.GetComponent<RectTransform>();
+        btrt.anchorMin = Vector2.zero;
+        btrt.anchorMax = Vector2.one;
+        btrt.sizeDelta = Vector2.zero;
+        btrt.anchoredPosition = Vector2.zero;
+
+        return panel;
     }
 
     static void BuildEscapeEndingScene()
@@ -383,7 +491,7 @@ public class LevelBuilder
 
         GameObject titleObj = new GameObject("VictoryText");
         titleObj.transform.parent = canvasObj.transform;
-        TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
+        Text titleText = titleObj.AddComponent<Text>();
         titleText.text = "YOU ESCAPED!";
         titleText.color = Color.green;
         titleObj.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);

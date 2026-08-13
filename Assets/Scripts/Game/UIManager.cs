@@ -1,12 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
-    public TextMeshProUGUI timerText;
+    public Text timerText;
     public Slider timerBar;
     public GameObject pauseMenu;
     public GameObject gameOverMenu;

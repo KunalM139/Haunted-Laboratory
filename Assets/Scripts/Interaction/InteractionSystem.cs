@@ -1,11 +1,11 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.UI;
 
 public class InteractionSystem : MonoBehaviour
 {
     public Camera playerCamera;
     public float interactionDistance = 3f;
-    public TextMeshProUGUI interactionText;
+    public Text interactionText;
 
     private IInteractable currentInteractable;
 

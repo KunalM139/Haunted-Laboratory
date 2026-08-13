@@ -1,11 +1,11 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.UI;
 
 public class CodePuzzle : MonoBehaviour, IInteractable
 {
     public string correctCode = "1984";
     public string currentCode = "";
-    public TextMeshProUGUI display;
+    public Text display;
     
     private bool isSolved = false;
 
