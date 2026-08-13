@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using TMPro;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
