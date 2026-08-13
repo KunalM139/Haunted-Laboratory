@@ -222,7 +222,6 @@ public class LevelBuilder
         GameObject canvasObj = new GameObject("Canvas");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvasObj.AddComponent<CanvasScaler>();
         canvasObj.AddComponent<GraphicRaycaster>();
         UIManager um = canvasObj.AddComponent<UIManager>();
         
@@ -330,6 +329,7 @@ public class LevelBuilder
         gameOverMenu.SetActive(false);
 
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/Laboratory.unity");
+        FixCanvasScale("Assets/Scenes/Laboratory.unity");
     }
 
     static void BuildMainMenuScene()
@@ -344,9 +344,6 @@ public class LevelBuilder
         GameObject canvasObj = new GameObject("Canvas");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        CanvasScaler cs = canvasObj.AddComponent<CanvasScaler>();
-        cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        cs.referenceResolution = new Vector2(1920, 1080);
         canvasObj.AddComponent<GraphicRaycaster>();
         
         GameObject eventSystem = new GameObject("EventSystem");
@@ -418,6 +415,7 @@ public class LevelBuilder
         setPanel.SetActive(false);
 
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/MainMenu.unity");
+        FixCanvasScale("Assets/Scenes/MainMenu.unity");
     }
 
     static GameObject CreatePanel(GameObject canvas, string name, string text, Font font, MainMenuManager mmm)
@@ -482,6 +480,7 @@ public class LevelBuilder
         GameObject canvasObj = new GameObject("Canvas");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvasObj.GetComponent<RectTransform>().localScale = Vector3.one;
         canvasObj.AddComponent<CanvasScaler>();
         canvasObj.AddComponent<GraphicRaycaster>();
         
@@ -489,16 +488,40 @@ public class LevelBuilder
         eventSystem.AddComponent<EventSystem>();
         eventSystem.AddComponent<StandaloneInputModule>();
 
+        Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
         GameObject titleObj = new GameObject("VictoryText");
         titleObj.transform.parent = canvasObj.transform;
         Text titleText = titleObj.AddComponent<Text>();
         titleText.text = "YOU ESCAPED!";
         titleText.color = Color.green;
+        titleText.fontSize = 72;
+        titleText.alignment = TextAnchor.MiddleCenter;
+        if (defaultFont != null) titleText.font = defaultFont;
         titleObj.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
         titleObj.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
         titleObj.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(600, 100);
+        titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 200);
 
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/EscapeEnding.unity");
+        FixCanvasScale("Assets/Scenes/EscapeEnding.unity");
+    }
+
+    /// <summary>
+    /// CRITICAL FIX: Unity's Canvas component in ScreenSpaceOverlay mode forcibly
+    /// serializes its RectTransform localScale as (0,0,0) in batch mode because
+    /// there is no screen resolution. This post-save step patches the YAML to fix it.
+    /// </summary>
+    static void FixCanvasScale(string scenePath)
+    {
+        string fullPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), scenePath);
+        if (!System.IO.File.Exists(fullPath)) return;
+        string content = System.IO.File.ReadAllText(fullPath);
+        string patched = content.Replace(
+            "m_LocalScale: {x: 0, y: 0, z: 0}",
+            "m_LocalScale: {x: 1, y: 1, z: 1}"
+        );
+        System.IO.File.WriteAllText(fullPath, patched);
+        Debug.Log($"FixCanvasScale: patched {scenePath}");
     }
 }
