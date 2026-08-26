@@ -1,5 +1,5 @@
 # Haunted Laboratory: VR Escape Room
-k
+
 **Haunted Laboratory** is a single-player Escape Room game built as a college project for an AR/VR/MR subject.
 
 ## Project Description
